@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:money_management/auth/auth_page.dart';
+import 'package:money_management/data/expense_data.dart';
 import 'package:money_management/pages/home_page.dart';
+import 'package:provider/provider.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -13,7 +15,9 @@ class MainPage extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData){
-            return const HomePage();
+            return  ChangeNotifierProvider(create:  (context) => ExpenseData(),
+            builder: (context, _) => const HomePage(),
+            );
           } else {
             return const AuthPage();
           }
