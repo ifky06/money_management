@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:money_management/components/expense_summary.dart';
 import 'package:money_management/components/expense_tile.dart';
-import 'package:money_management/data/expense_data.dart';
+// import 'package:money_management/data/expense_data.dart';
 import 'package:money_management/models/expense_item.dart';
 import 'package:provider/provider.dart';
 
@@ -15,6 +16,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser;
+  final expenseCollection = FirebaseFirestore.instance.collection('expense');
+  var _totalExpense = 0.0;
 
   // text controllers
   final newExpenseNameController = TextEditingController();
@@ -41,6 +44,7 @@ class _HomePageState extends State<HomePage> {
                     decoration: const InputDecoration(
                       labelText: 'Expense Amount',
                     ),
+                    keyboardType: TextInputType.number,
                     controller: newExpenseAmountController,
                   ),
                 ],
@@ -61,17 +65,30 @@ class _HomePageState extends State<HomePage> {
   }
 
   // save new expense
-  void save() {
+  Future save() async {
     // create expense item
     ExpenseItem expenseItem = ExpenseItem(
+      id: '',
       name: newExpenseNameController.text,
       amount: newExpenseAmountController.text,
       dateTime: DateTime.now(),
+      user: user!.email!,
     );
 
-    Provider.of<ExpenseData>(context, listen: false).addNewExpense(expenseItem);
+    // add to firestore
+    await expenseItem.addNewExpense(expenseItem);
+    // await expenseCollection.add({
+    //   'name': expenseItem.name,
+    //   'amount': expenseItem.amount,
+    //   'dateTime': expenseItem.dateTime,
+    //   'user': expenseItem.user,
+    // });
+    // add to database
+
+    // Provider.of<ExpenseData>(context, listen: false).addNewExpense(expenseItem);
 
     // close dialog
+    // ignore: use_build_context_synchronously
     Navigator.of(context).pop();
 
     clearControllers();
@@ -91,33 +108,82 @@ class _HomePageState extends State<HomePage> {
     newExpenseAmountController.clear();
   }
 
+  // get total expense
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<ExpenseData>(
-        builder: (context, value, child) => Scaffold(
-            backgroundColor: Colors.grey[300],
-            floatingActionButton: FloatingActionButton(
-              onPressed: addNewExpense,
-              child: const Icon(Icons.add),
+    return Scaffold(
+        backgroundColor: Colors.grey[300],
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.grey[800],
+          onPressed: addNewExpense,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
+        body: ListView(
+          children: [
+            //weekly summary
+            StreamBuilder<double>(
+              stream: expenseCollection
+                  .where('user', isEqualTo: user!.email)
+                  .snapshots()
+                  .map((QuerySnapshot querySnapshot) {
+                double totalExpense = 0;
+                querySnapshot.docs.forEach((doc) {
+                  totalExpense += double.parse(doc['amount'].toString());
+                });
+                return totalExpense;
+              }),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Text('Total Expense: Rp. 0');
+                }
+
+                if (snapshot.hasError) {
+                  return Text('Total Expense: Rp. 0');
+                }
+
+                // Jika query berhasil dan data tersedia
+                if (snapshot.hasData) {
+                  double totalExpense = snapshot.data!;
+                  return Text('Total Expense: $totalExpense');
+                }
+
+                // Jika tidak ada data yang ditemukan
+                return Text('Total Expense: Rp. 0');
+              },
             ),
-            body: ListView(
-              children: [
-                //weekly summary
-                
-                // expense list
-                ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: Provider.of<ExpenseData>(context)
-                        .getExpenseList()
-                        .length,
-                    itemBuilder: (context, index) => ExpenseTile(
-                          name: value.getExpenseList()[index].name,
-                          amount: value.getExpenseList()[index].amount,
-                          dateTime: value.getExpenseList()[index].dateTime,
-                        )),
-              ],
-            )));
+
+            // ExpenseSummary(startOfWeek: ExpenseData.startOfWeekDate()),
+            // expense list
+            StreamBuilder(
+              stream: expenseCollection
+                  .where('user', isEqualTo: user!.email)
+                  .orderBy('dateTime', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Text('Something went wrong');
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Text('Loading');
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    final expense =
+                        ExpenseItem.fromSnapshot(snapshot.data!.docs[index]);
+
+                    return ExpenseTile(expenseItem: expense);
+                  },
+                );
+              },
+            ),
+          ],
+        ));
   }
 
   //  return Scaffold(
