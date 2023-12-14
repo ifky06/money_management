@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:money_management/components/expense_summary.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:money_management/components/expense_tile.dart';
 // import 'package:money_management/data/expense_data.dart';
 import 'package:money_management/models/expense_item.dart';
-import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
+  
+
   const HomePage({super.key});
 
   @override
@@ -17,7 +18,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser;
   final expenseCollection = FirebaseFirestore.instance.collection('expense');
-  var _totalExpense = 0.0;
 
   // text controllers
   final newExpenseNameController = TextEditingController();
@@ -114,11 +114,31 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.grey[300],
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: SpeedDial(
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme:
+              const IconThemeData(size: 22.0, color: Colors.white),
           backgroundColor: Colors.grey[800],
-          onPressed: addNewExpense,
-          child: const Icon(Icons.add, color: Colors.white),
+          visible: true,
+          curve: Curves.bounceIn,
+          children: [
+            SpeedDialChild(
+              child: const Icon(Icons.post_add, color: Colors.white),
+              backgroundColor: Colors.grey[800],
+              onTap: addNewExpense,
+            ),
+            SpeedDialChild(
+              child: const Icon(Icons.camera_alt_rounded, color: Colors.white),
+              backgroundColor: Colors.grey[800],
+              onTap: addNewExpense,
+            ),
+          ],
         ),
+        // FloatingActionButton(
+        //   backgroundColor: Colors.grey[800],
+        //   onPressed: addNewExpense,
+        //   child: const Icon(Icons.add, color: Colors.white),
+        // ),
         body: ListView(
           children: [
             //weekly summary

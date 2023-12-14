@@ -3,6 +3,7 @@ import 'package:money_management/pages/login_page.dart';
 import 'package:money_management/pages/register_page.dart';
 
 class AuthPage extends StatefulWidget {
+  static const routeName = '/auth';
   const AuthPage({super.key});
 
   @override
