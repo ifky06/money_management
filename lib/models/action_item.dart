@@ -60,4 +60,23 @@ class ActionItem {
       'user': newAction.user,
     });
   }
+
+  Future<void> deleteAction(ActionItem action) async {
+    final balance = await saldoCollection
+        .where('user', isEqualTo: action.user)
+        .get()
+        .then((value) => value.docs.first);
+    if (action.isIncome) {
+      await saldoCollection.doc(balance.id).update({
+        'amount':
+            int.parse(balance['amount'].toString()) - int.parse(action.amount),
+      });
+    } else {
+      await saldoCollection.doc(balance.id).update({
+        'amount':
+            int.parse(balance['amount'].toString()) + int.parse(action.amount),
+      });
+    }
+    await actionCollection.doc(action.id).delete();
+  }
 }
