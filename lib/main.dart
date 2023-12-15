@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:money_management/firebase_options.dart';
 import 'package:money_management/pages/splash_page.dart';
+import 'package:money_management/theme/theme_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +22,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Money Management',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: ThemeConstants.primaryBlue),
+        useMaterial3: true,
       ),
       home: const SplashPage(),
     );
