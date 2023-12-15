@@ -61,6 +61,43 @@ class ActionItem {
     });
   }
 
+  // update action amount
+  Future<void> updateAction(ActionItem action) async {
+    final balanceSnapshot = await saldoCollection
+        .where('user', isEqualTo: action.user)
+        .get()
+        .then((value) => value.docs.first);
+
+    final oldAmountSnapshot = await actionCollection.doc(action.id).get();
+
+    final int oldAmount = int.parse(oldAmountSnapshot['amount'].toString());
+    print(oldAmount);
+    final int newAmount = int.parse(action.amount);
+    print(newAmount);
+
+    final int balanceAmount = balanceSnapshot['amount'];
+
+    int updateAmount = 0;
+
+    if (action.isIncome) {
+      updateAmount =
+          oldAmount > newAmount ? oldAmount - newAmount : newAmount - oldAmount;
+      updateAmount = balanceAmount +
+          (oldAmount > newAmount ? -updateAmount : updateAmount);
+    } else {
+      updateAmount = oldAmount > newAmount
+          ? updateAmount = oldAmount - newAmount
+          : newAmount - oldAmount;
+      updateAmount = balanceAmount +
+          (oldAmount > newAmount ? updateAmount : -updateAmount);
+    }
+
+    await saldoCollection
+        .doc(balanceSnapshot.id)
+        .update({'amount': updateAmount});
+    await actionCollection.doc(action.id).update({'amount': newAmount});
+  }
+
   Future<void> deleteAction(ActionItem action) async {
     final balance = await saldoCollection
         .where('user', isEqualTo: action.user)

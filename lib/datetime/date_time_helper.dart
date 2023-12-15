@@ -1,5 +1,5 @@
 // convert DateTime object to a string  yyyymmdd
-String convertDateTimeToString(DateTime dateTime){
+String convertDateTimeToString(DateTime dateTime) {
   // year in the format yyyy
   String year = dateTime.year.toString();
 
@@ -19,4 +19,22 @@ String convertDateTimeToString(DateTime dateTime){
   String yyyymmdd = year + month + day;
 
   return yyyymmdd;
+}
+
+String convertMonthNumberToString(int monthNumber) {
+  String monthName = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des'
+  ][monthNumber - 1];
+  return monthName;
 }
