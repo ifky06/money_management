@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 
 class ActionItem {
   final String id;
@@ -19,10 +20,10 @@ class ActionItem {
 
   factory ActionItem.fromJson(Map<String, dynamic> json) {
     return ActionItem(
-      id: json['id'],
+      id: '',
       amount: json['amount'],
-      dateTime: json['dateTime'].toDate(),
-      isIncome: json['isIncome'],
+      dateTime: DateTime.parse(json['dateTime']),
+      isIncome: json['isIncome'] == 'true' ? true : false,
       user: json['user'],
     );
   }
@@ -115,5 +116,29 @@ class ActionItem {
       });
     }
     await actionCollection.doc(action.id).delete();
+  }
+
+  static Future<ActionItem?> getDataByUploadImage(
+      String filePath, String url, Dio dio) async {
+    String fileName = filePath.split('/').last;
+    FormData formData = FormData.fromMap({
+      'image': await MultipartFile.fromFile(filePath, filename: fileName),
+    });
+    late Response response;
+    try {
+      response = await dio.post(
+        url,
+        data: formData,
+      );
+    } on DioException catch (_) {
+      return null;
+    }
+    return ActionItem.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  // overide to string
+  @override
+  String toString() {
+    return 'ActionItem{id: $id, amount: $amount, dateTime: $dateTime, isIncome: $isIncome, user: $user}';
   }
 }
