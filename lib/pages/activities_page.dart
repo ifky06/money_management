@@ -28,36 +28,41 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                 fontWeight: FontWeight.bold),
           )),
         ),
-        body: StreamBuilder(
-          stream: actionCollection
-              .where('user', isEqualTo: user!.email)
-              .orderBy('dateTime', descending: true)
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return const Text('Something went wrong');
-            }
+        body: SingleChildScrollView(
+          child: StreamBuilder(
+            stream: actionCollection
+                .where('user', isEqualTo: user!.email)
+                .orderBy('dateTime', descending: true)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return const Text('Something went wrong');
+              }
 
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: CircularProgressIndicator(
-                  color: ThemeConstants.primaryBlue,
-                ),
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: ThemeConstants.primaryBlue,
+                    ),
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  final action =
+                      ActionItem.fromSnapshot(snapshot.data!.docs[index]);
+
+                  return ActionTile(actionItem: action);
+                },
               );
-            }
-
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: snapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                final action =
-                    ActionItem.fromSnapshot(snapshot.data!.docs[index]);
-
-                return ActionTile(actionItem: action);
-              },
-            );
-          },
+            },
+          ),
         ));
   }
 }

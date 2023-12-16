@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:money_management/auth/auth_page.dart';
 import 'package:money_management/pages/activities_page.dart';
 import 'package:money_management/pages/home_page.dart';
+import 'package:money_management/pages/scan_page.dart';
+import 'package:money_management/pages/profile_page.dart';
+import 'package:money_management/theme/theme_constants.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -24,7 +27,8 @@ class _MainPageState extends State<MainPage> {
             body: [
               const HomePage(),
               const ActivitiesPage(),
-              const HomePage()
+              const ScanPage(),
+              const ProfilePage(),
             ][currentPagesIndex],
             bottomNavigationBar: BottomNavigationBar(
               currentIndex: currentPagesIndex,
@@ -41,10 +45,21 @@ class _MainPageState extends State<MainPage> {
                   label: 'Aktivitas',
                 ),
                 BottomNavigationBarItem(
+                  icon: Icon(Icons.camera_alt),
+                  label: 'Scan',
+                ),
+                BottomNavigationBarItem(
                   icon: Icon(Icons.person),
                   label: 'Profile',
                 ),
               ],
+              backgroundColor: ThemeConstants.primaryBlack,
+              selectedFontSize: 10,
+              unselectedFontSize: 10,
+              showUnselectedLabels: false,
+              fixedColor: ThemeConstants.primaryBlue,
+              unselectedIconTheme:
+                  IconThemeData(color: ThemeConstants.primaryGrey),
             ),
           );
         } else {

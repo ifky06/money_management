@@ -5,7 +5,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:money_management/components/expense_tile.dart';
 // import 'package:money_management/data/expense_data.dart';
 import 'package:money_management/models/expense_item.dart';
-import 'package:money_management/pages/scan_page.dart';
+import 'package:money_management/pages/old_scan_page.dart';
 
 class OldHomePage extends StatefulWidget {
   
