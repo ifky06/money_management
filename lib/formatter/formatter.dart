@@ -38,3 +38,8 @@ String convertMonthNumberToString(int monthNumber) {
   ][monthNumber - 1];
   return monthName;
 }
+
+// String numberFormat(int number) {
+//   return NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0)
+//       .format(number);
+// }

@@ -20,8 +20,8 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: ThemeConstants.primaryBlue,
-          title: Center(
-              child: const Text(
+          title: const Center(
+              child: Text(
             'Aktivitas',
             style: TextStyle(
                 color: ThemeConstants.primaryWhite,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:money_management/datetime/date_time_helper.dart';
+import 'package:money_management/formatter/formatter.dart';
 import 'package:money_management/models/action_item.dart';
 import 'package:money_management/theme/theme_constants.dart';
 

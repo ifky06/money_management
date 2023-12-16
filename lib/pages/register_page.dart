@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:money_management/models/user_detail.dart';
+import 'package:money_management/theme/theme_constants.dart';
 
 class RegisterPage extends StatefulWidget {
   final VoidCallback showLoginPage;
@@ -15,6 +17,8 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   // text Controller
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -22,6 +26,8 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void dispose() {
     // TODO: implement dispose
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -30,9 +36,28 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future signUp() async {
     if (isPasswordMatch()) {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim());
+      UserDetail userDetail = UserDetail(
+        id: '',
+        username: '',
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        email: _emailController.text.trim(),
+        phoneNumber: '',
+        profilePicURL: '',
+      );
+      try {
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim());
+        await userDetail.addNewUser(userDetail);
+      } on FirebaseAuthException catch (e) {
+        print(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message!),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -54,26 +79,22 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.grey[300],
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  const Icon(
-                    Icons.android,
-                    size: 100,
-                  ),
                   // hello again
                   Text(
-                    'Hello there!',
+                    'Sign Up',
                     style: GoogleFonts.bebasNeue(
                       fontSize: 40,
                     ),
                   ),
                   const Text(
-                    'register to FireFlutter',
+                    'register to KuiBel',
                     style: TextStyle(
                       fontSize: 20,
                     ),
@@ -84,7 +105,49 @@ class _RegisterPageState extends State<RegisterPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 25),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
+                        color: ThemeConstants.primaryLightBlue,
+                        border: Border.all(color: Colors.white),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20),
+                        child: TextField(
+                          controller: _firstNameController,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'First Name',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: ThemeConstants.primaryLightBlue,
+                        border: Border.all(color: Colors.white),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20),
+                        child: TextField(
+                          controller: _lastNameController,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Last Name',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: ThemeConstants.primaryLightBlue,
                         border: Border.all(color: Colors.white),
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -106,7 +169,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 25),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
+                        color: ThemeConstants.primaryLightBlue,
                         border: Border.all(color: Colors.white),
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -129,7 +192,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 25),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
+                        color: ThemeConstants.primaryLightBlue,
                         border: Border.all(color: Colors.white),
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -155,7 +218,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 52, 147, 224),
+                          color: ThemeConstants.primaryBlue,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Center(
@@ -179,9 +242,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       const Text("I'm already a member,"),
                       GestureDetector(
                         onTap: widget.showLoginPage,
-                        child: const Text(" login now",
+                        child: const Text(" Login now",
                             style: TextStyle(
-                                color: Color.fromARGB(255, 52, 147, 224))),
+                                color: ThemeConstants.primaryBlue,
+                                fontWeight: FontWeight.bold)),
                       ),
                     ],
                   )

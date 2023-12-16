@@ -230,6 +230,7 @@ class _ScanPageState extends State<ScanPage> {
                                               labelText: 'Kamera',
                                               onClick: () {
                                                 pickImage(ImageSource.camera);
+                                                Navigator.pop(context);
                                               }),
                                           ActionButton(
                                               iconData: Icons.image,

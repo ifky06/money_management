@@ -20,7 +20,7 @@ class _TotalAmountState extends State<TotalAmount> {
   Widget build(BuildContext context) {
     return Container(
         width: double.infinity,
-        margin: EdgeInsets.symmetric(horizontal: 5, vertical: 15),
+        margin: EdgeInsets.symmetric(vertical: 15),
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -83,7 +83,7 @@ class _TotalAmountState extends State<TotalAmount> {
                   int totalAction = snapshot.data!;
                   return Text('Rp. $totalAction',
                       style: TextStyle(
-                          fontSize: 23,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: ThemeConstants.primaryBlack));
                 }
@@ -91,7 +91,7 @@ class _TotalAmountState extends State<TotalAmount> {
                 // Jika tidak ada data yang ditemukan
                 return Text('Rp. 0',
                     style: TextStyle(
-                        fontSize: 23,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: ThemeConstants.primaryBlack));
               },
