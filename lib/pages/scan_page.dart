@@ -5,8 +5,10 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:money_management/components/action_button.dart';
+import 'package:money_management/formatter/currency_formatter.dart';
 import 'package:money_management/models/action_item.dart';
 import 'package:money_management/theme/theme_constants.dart';
 import 'package:uuid/uuid.dart';
@@ -90,16 +92,20 @@ class _ScanPageState extends State<ScanPage> {
         context: context,
         builder: (context) => AlertDialog(
               title: const Text('Tambahkan Pengeluaran'),
-              content: Column(
-                children: [
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Jumlah Pengeluaran',
-                    ),
-                    keyboardType: TextInputType.number,
-                    controller: newIncomeAmountController,
-                  ),
+              content: TextFormField(
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyFormatter(),
                 ],
+                decoration: const InputDecoration(
+                  hintText: 'Jumlah Pengeluaran',
+                  icon: Text('Rp.',
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false, signed: false),
+                controller: newIncomeAmountController,
               ),
               actions: [
                 // save button
@@ -121,7 +127,7 @@ class _ScanPageState extends State<ScanPage> {
     // create expense item
     ActionItem actionItem = ActionItem(
       id: '',
-      amount: newIncomeAmountController.text,
+      amount: newIncomeAmountController.text.replaceAll(",", ""),
       dateTime: DateTime.now(),
       isIncome: false,
       user: user!.email!,
@@ -268,7 +274,7 @@ class _ScanPageState extends State<ScanPage> {
                           CircularProgressIndicator(),
                           SizedBox(height: 16),
                           Text(
-                            'Scanning KTM',
+                            'Scanning Kuitansi',
                             style: TextStyle(
                               fontWeight: FontWeight.w900,
                               fontSize: 18,

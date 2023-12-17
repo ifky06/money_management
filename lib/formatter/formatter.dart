@@ -1,4 +1,6 @@
 // convert DateTime object to a string  yyyymmdd
+import 'package:intl/intl.dart';
+
 String convertDateTimeToString(DateTime dateTime) {
   // year in the format yyyy
   String year = dateTime.year.toString();
@@ -39,7 +41,7 @@ String convertMonthNumberToString(int monthNumber) {
   return monthName;
 }
 
-// String numberFormat(int number) {
-//   return NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0)
-//       .format(number);
-// }
+String currencyFormat(int number) {
+  return NumberFormat.currency(locale: 'id', symbol: 'Rp. ', decimalDigits: 0)
+      .format(number);
+}

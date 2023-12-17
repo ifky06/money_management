@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:intl/intl.dart';
+import 'package:money_management/formatter/currency_formatter.dart';
 import 'package:money_management/formatter/formatter.dart';
 import 'package:money_management/models/action_item.dart';
 import 'package:money_management/theme/theme_constants.dart';
@@ -14,6 +17,8 @@ class ActionTile extends StatefulWidget {
 }
 
 class _ActionTileState extends State<ActionTile> {
+  final money = NumberFormat("#,##0", "en_US");
+
   void deleteTapped(BuildContext context) {
     // delete expense
     // Provider.of<ExpenseData>(context, listen: false).deleteExpense(expenseItem);
@@ -24,21 +29,25 @@ class _ActionTileState extends State<ActionTile> {
   final TextEditingController _amountController = TextEditingController();
 
   void editTapped(BuildContext context) {
-    _amountController.text = widget.actionItem.amount.toString();
+    _amountController.text = money.format(int.parse(widget.actionItem.amount));
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              title: const Text('Edit Action'),
-              content: Column(
-                children: [
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Action Amount',
-                    ),
-                    keyboardType: TextInputType.number,
-                    controller: _amountController,
-                  ),
+              title: const Text('Edit Jumlah'),
+              content: TextFormField(
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyFormatter(),
                 ],
+                decoration: const InputDecoration(
+                  hintText: 'Jumlah baru',
+                  icon: Text('Rp.',
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false, signed: false),
+                controller: _amountController,
               ),
               actions: [
                 // save button
@@ -49,7 +58,7 @@ class _ActionTileState extends State<ActionTile> {
                       final String editedAmount = _amountController.text;
                       ActionItem newActionItem = ActionItem(
                         id: widget.actionItem.id,
-                        amount: editedAmount,
+                        amount: editedAmount.replaceAll(",", ""),
                         dateTime: widget.actionItem.dateTime,
                         isIncome: widget.actionItem.isIncome,
                         user: widget.actionItem.user,
@@ -115,9 +124,14 @@ class _ActionTileState extends State<ActionTile> {
                 Text(widget.actionItem.isIncome ? 'Uang Masuk' : 'Uang Keluar'),
             subtitle: Text(
                 '${widget.actionItem.dateTime.day} ${convertMonthNumberToString(widget.actionItem.dateTime.month)} ${widget.actionItem.dateTime.year}'),
-            trailing: Text(widget.actionItem.isIncome
-                ? 'Rp. ${widget.actionItem.amount}'
-                : '-Rp. ${widget.actionItem.amount}'),
+            trailing: Text(
+              widget.actionItem.isIncome
+                  ? currencyFormat(int.parse(widget.actionItem.amount))
+                  : '- ${currencyFormat(int.parse(widget.actionItem.amount))}',
+              style: const TextStyle(
+                fontSize: 13,
+              ),
+            ),
           ),
         ),
       ),

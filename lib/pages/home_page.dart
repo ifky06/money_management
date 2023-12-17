@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:money_management/components/total_amount_card.dart';
+import 'package:money_management/formatter/currency_formatter.dart';
+import 'package:money_management/formatter/formatter.dart';
 import 'package:money_management/models/action_item.dart';
 import 'package:money_management/theme/theme_constants.dart';
 
@@ -25,16 +28,20 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (context) => AlertDialog(
               title: const Text('Tambah Saldo'),
-              content: Column(
-                children: [
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Jumlah Saldo',
-                    ),
-                    keyboardType: TextInputType.number,
-                    controller: newIncomeAmountController,
-                  ),
+              content: TextFormField(
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyFormatter(),
                 ],
+                decoration: const InputDecoration(
+                  hintText: 'Jumlah saldo',
+                  icon: Text('Rp.',
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                    decimal: false, signed: false),
+                controller: newIncomeAmountController,
               ),
               actions: [
                 // save button
@@ -56,7 +63,7 @@ class _HomePageState extends State<HomePage> {
     // create expense item
     ActionItem actionItem = ActionItem(
       id: '',
-      amount: newIncomeAmountController.text,
+      amount: newIncomeAmountController.text.replaceAll(",", ""),
       dateTime: DateTime.now(),
       isIncome: true,
       user: user!.email!,
@@ -153,9 +160,9 @@ class _HomePageState extends State<HomePage> {
                                   // Jika query berhasil dan data tersedia
                                   if (snapshot.hasData) {
                                     int totalExpense = snapshot.data!;
-                                    return Text('Rp. $totalExpense',
+                                    return Text(currencyFormat(totalExpense),
                                         style: const TextStyle(
-                                            fontSize: 20,
+                                            fontSize: 17,
                                             fontWeight: FontWeight.bold,
                                             color: ThemeConstants.primaryBlue));
                                   }
@@ -163,7 +170,7 @@ class _HomePageState extends State<HomePage> {
                                   // Jika tidak ada data yang ditemukan
                                   return const Text('Rp. 0',
                                       style: TextStyle(
-                                          fontSize: 20,
+                                          fontSize: 17,
                                           fontWeight: FontWeight.bold,
                                           color: ThemeConstants.primaryBlue));
                                 },
