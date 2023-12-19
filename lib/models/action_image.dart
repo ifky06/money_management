@@ -4,6 +4,7 @@ class ActionImage {
   final String id;
   final String imageURL;
   final String idAction;
+  final String user;
   final actionImageCollection =
       FirebaseFirestore.instance.collection('action_images');
 
@@ -11,6 +12,7 @@ class ActionImage {
     required this.id,
     required this.imageURL,
     required this.idAction,
+    required this.user,
   });
 
   factory ActionImage.fromJson(Map<String, dynamic> json) {
@@ -18,6 +20,7 @@ class ActionImage {
       id: '',
       imageURL: json['imageURL'],
       idAction: json['idAction'],
+      user: '',
     );
   }
 
@@ -26,6 +29,7 @@ class ActionImage {
       id: doc.id,
       imageURL: doc['imageURL'],
       idAction: doc['idAction'],
+      user: doc['user'],
     );
   }
 
@@ -33,6 +37,7 @@ class ActionImage {
     await actionImageCollection.add({
       'imageURL': newActionImage.imageURL,
       'idAction': newActionImage.idAction,
+      'user': newActionImage.user,
     });
   }
 }

@@ -91,6 +91,7 @@ class _ScanPageState extends State<ScanPage> {
         id: '',
         imageURL: url,
         idAction: idAction,
+        user: user!.email!,
       );
       await actionImage.addNewActionImage(actionImage);
 

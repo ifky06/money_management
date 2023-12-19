@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:money_management/components/total_amount_card.dart';
 import 'package:money_management/formatter/currency_formatter.dart';
 import 'package:money_management/formatter/formatter.dart';
+import 'package:money_management/models/action_image.dart';
 import 'package:money_management/models/action_item.dart';
 import 'package:money_management/theme/theme_constants.dart';
 
@@ -18,6 +19,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser;
   final saldoCollection = FirebaseFirestore.instance.collection('saldo');
+  final actionImageCollection =
+      FirebaseFirestore.instance.collection('action_images');
 
   // text controllers
   final newIncomeAmountController = TextEditingController();
@@ -240,6 +243,54 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.bold,
                       color: ThemeConstants.primaryBlack)),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: StreamBuilder(
+                  stream: actionImageCollection
+                      .where('user', isEqualTo: user!.email)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return const Text('Something went wrong');
+                    }
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: ThemeConstants.primaryBlue,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return Container(
+                      height: 100,
+                      child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: snapshot.data!.docs.length,
+                          itemBuilder: (context, index) {
+                            final actionImage = ActionImage.fromSnapshot(
+                                snapshot.data!.docs[index]);
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                width: 200,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  image: DecorationImage(
+                                    image: NetworkImage(actionImage.imageURL),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                    );
+                  }),
+            )
           ],
         ),
       ),
