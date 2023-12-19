@@ -59,4 +59,12 @@ class UserDetail {
       'user': user.email,
     });
   }
+
+  // get user by email
+  static Future<UserDetail> getUserByEmail(String email) async {
+    final user = await FirebaseFirestore.instance.collection('users').where('email', isEqualTo: email).get();
+    final userDetail = user.docs.first;
+    return UserDetail.fromSnapshot(userDetail);
+  }
+
 }

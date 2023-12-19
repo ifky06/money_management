@@ -30,14 +30,14 @@ class _ScanPageState extends State<ScanPage> {
   final uuid = const Uuid();
 
   bool isLoading = false;
-  final dio = Dio(BaseOptions(baseUrl: 'http://10.210.247.125:5000/'));
+  final dio = Dio(BaseOptions(baseUrl: 'http://192.168.1.75:5000/'));
 
   Future<void> sendImage(Dio dio) async {
     setState(() {
       isLoading = true;
     });
     final actionData = await ActionItem.getDataByUploadImage(
-        imageFile!.path, '/ocr_kuitansi', dio);
+        imageFile!.path, '/perform_ocr', dio);
     if (actionData != null) {
       print(actionData);
     } else {
@@ -57,8 +57,8 @@ class _ScanPageState extends State<ScanPage> {
     if (pickedImage == null) return;
     imageFile = pickedImage;
     setState(() {});
-    await sendImage(dio);
-    print(await uploadImage());
+    // await sendImage(dio);
+    // print(await uploadImage());
   }
 
   Future<String> uploadImage() async {
@@ -261,6 +261,52 @@ class _ScanPageState extends State<ScanPage> {
                       },
                     ),
                   ),
+                  Container(
+                    width: double.infinity,
+                    height: 350,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: (imageFile != null)
+                        ? Center(
+                            child: Image.file(
+                              File(imageFile!.path),
+                            ),
+                          )
+                        : null,
+                  ),
+                  (imageFile != null)
+                      ? ElevatedButton(
+                          onPressed: () async {
+                            // print(await uploadImage());
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ThemeConstants.primaryBlue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Container(
+                            width: double.infinity,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                'Scan',
+                                style: TextStyle(
+                                  color: ThemeConstants.primaryWhite,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ],
               ),
             ),

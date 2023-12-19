@@ -125,11 +125,13 @@ class ActionItem {
       'image': await MultipartFile.fromFile(filePath, filename: fileName),
     });
     late Response response;
+    print('masuk try dio');
     try {
       response = await dio.post(
         url,
         data: formData,
       );
+      print(response.data);
     } on DioException catch (_) {
       return null;
     }
