@@ -7,8 +7,10 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:money_management/components/action_button.dart';
 import 'package:money_management/formatter/currency_formatter.dart';
+import 'package:money_management/models/action_image.dart';
 import 'package:money_management/models/action_item.dart';
 import 'package:money_management/theme/theme_constants.dart';
 import 'package:uuid/uuid.dart';
@@ -23,23 +25,30 @@ class ScanPage extends StatefulWidget {
 class _ScanPageState extends State<ScanPage> {
   final user = FirebaseAuth.instance.currentUser;
   final saldoCollection = FirebaseFirestore.instance.collection('saldo');
+  final storage = FirebaseStorage.instance;
+  final uuid = const Uuid();
+  final money = NumberFormat("#,##0", "en_US");
+  // text controllers
+  final newAmountController = TextEditingController();
+
+  // action data
+  ActionItem? actionData;
 
   ImagePicker imagePicker = ImagePicker();
   XFile? imageFile;
-  final storage = FirebaseStorage.instance;
-  final uuid = const Uuid();
 
   bool isLoading = false;
-  final dio = Dio(BaseOptions(baseUrl: 'http://192.168.1.75:5000/'));
+  final dio = Dio(BaseOptions(baseUrl: 'http://192.168.18.18:5000/'));
 
   Future<void> sendImage(Dio dio) async {
     setState(() {
       isLoading = true;
     });
-    final actionData = await ActionItem.getDataByUploadImage(
+    actionData = await ActionItem.getDataByUploadImage(
         imageFile!.path, '/perform_ocr', dio);
     if (actionData != null) {
-      print(actionData);
+      newAmountController.text = money.format(int.parse(actionData!.amount));
+      addNewExpense();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -61,8 +70,10 @@ class _ScanPageState extends State<ScanPage> {
     // print(await uploadImage());
   }
 
-  Future<String> uploadImage() async {
-    if (imageFile == null) return '';
+  Future<void> uploadImage(String idAction) async {
+    setState(() {
+      isLoading = true;
+    });
     try {
       final fileName = uuid.v1();
       final destination = 'images/$fileName.jpg';
@@ -74,17 +85,27 @@ class _ScanPageState extends State<ScanPage> {
       final url = await storage.ref(destination).getDownloadURL();
       print('selesai get url');
       print(url);
-      return url;
+
+      // Update action image
+      final actionImage = ActionImage(
+        id: '',
+        imageURL: url,
+        idAction: idAction,
+      );
+      await actionImage.addNewActionImage(actionImage);
+
+      setState(() {
+        isLoading = false;
+      });
 
       // TODO: Simpan URL ke Firestore atau lakukan tindakan lain sesuai kebutuhan
     } catch (e) {
       print('Error uploading image: $e');
-      return '';
+      setState(() {
+        isLoading = false;
+      });
     }
   }
-
-  // text controllers
-  final newIncomeAmountController = TextEditingController();
 
   // add new expense
   void addNewExpense() {
@@ -105,7 +126,7 @@ class _ScanPageState extends State<ScanPage> {
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
                     decimal: false, signed: false),
-                controller: newIncomeAmountController,
+                controller: newAmountController,
               ),
               actions: [
                 // save button
@@ -125,20 +146,28 @@ class _ScanPageState extends State<ScanPage> {
   // save new expense
   Future save() async {
     // create expense item
-    ActionItem actionItem = ActionItem(
-      id: '',
-      amount: newIncomeAmountController.text.replaceAll(",", ""),
-      dateTime: DateTime.now(),
-      isIncome: false,
-      user: user!.email!,
-    );
+    ActionItem actionItem;
+    if (actionData == null) {
+      actionItem = ActionItem(
+        id: '',
+        amount: newAmountController.text.replaceAll(",", ""),
+        dateTime: DateTime.now(),
+        isIncome: false,
+        user: user!.email!,
+      );
+      await actionItem.addNewAction(actionItem);
+
+      cancel();
+    } else {
+      Navigator.of(context).pop();
+      actionItem = actionData!;
+      String id = await actionItem.addNewActionAndGetId(actionItem);
+      await uploadImage(id);
+
+      clearControllers();
+    }
 
     // add to firestore
-    await actionItem.addNewAction(actionItem);
-
-    cancel();
-
-    clearControllers();
   }
 
   // cancel new expense
@@ -151,7 +180,8 @@ class _ScanPageState extends State<ScanPage> {
 
   // clear controllers
   void clearControllers() {
-    newIncomeAmountController.clear();
+    newAmountController.clear();
+    actionData = null;
   }
 
   @override
@@ -281,6 +311,7 @@ class _ScanPageState extends State<ScanPage> {
                       ? ElevatedButton(
                           onPressed: () async {
                             // print(await uploadImage());
+                            sendImage(dio);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: ThemeConstants.primaryBlue,
@@ -320,10 +351,10 @@ class _ScanPageState extends State<ScanPage> {
                           CircularProgressIndicator(),
                           SizedBox(height: 16),
                           Text(
-                            'Scanning Kuitansi',
+                            'Loading',
                             style: TextStyle(
                               fontWeight: FontWeight.w900,
-                              fontSize: 18,
+                              fontSize: 18, 
                               color: ThemeConstants.primaryWhite,
                             ),
                           )

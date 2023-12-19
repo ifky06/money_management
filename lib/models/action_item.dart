@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ActionItem {
   final String id;
@@ -21,10 +22,17 @@ class ActionItem {
   factory ActionItem.fromJson(Map<String, dynamic> json) {
     return ActionItem(
       id: '',
-      amount: json['amount'],
-      dateTime: DateTime.parse(json['dateTime']),
-      isIncome: json['isIncome'] == 'true' ? true : false,
-      user: json['user'],
+      // if amount is "" then set to 0
+      amount: json['result']['total_amount'] == ""
+          ? "0"
+          : json['result']['total_amount']
+              .toString()
+              .replaceAll('.', '')
+              .replaceAll(',', ''),
+      dateTime: DateTime.now(),
+      isIncome: false,
+      // get user from firebase auth
+      user: FirebaseAuth.instance.currentUser!.email!,
     );
   }
 
@@ -39,10 +47,32 @@ class ActionItem {
   }
 
   Future<void> addNewAction(ActionItem newAction) async {
+    updateBalance(newAction);
+    await actionCollection.add({
+      'amount': newAction.amount,
+      'dateTime': newAction.dateTime,
+      'isIncome': newAction.isIncome,
+      'user': newAction.user,
+    });
+  }
+
+  Future<String> addNewActionAndGetId(ActionItem newAction) async {
+    updateBalance(newAction);
+    final doc = await actionCollection.add({
+      'amount': newAction.amount,
+      'dateTime': newAction.dateTime,
+      'isIncome': newAction.isIncome,
+      'user': newAction.user,
+    });
+    return doc.id;
+  }
+
+  Future<void> updateBalance(ActionItem newAction) async {
     final balance = await saldoCollection
         .where('user', isEqualTo: newAction.user)
         .get()
         .then((value) => value.docs.first);
+
     if (isIncome) {
       await saldoCollection.doc(balance.id).update({
         'amount': int.parse(balance['amount'].toString()) +
@@ -54,12 +84,6 @@ class ActionItem {
             int.parse(newAction.amount),
       });
     }
-    await actionCollection.add({
-      'amount': newAction.amount,
-      'dateTime': newAction.dateTime,
-      'isIncome': newAction.isIncome,
-      'user': newAction.user,
-    });
   }
 
   // update action amount
